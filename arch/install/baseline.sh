@@ -22,7 +22,7 @@ packages="base \
   vim \
   zsh"
 
-# wait for host to be reachable (including dns query)
+# Wait for host to be reachable (including dns query)
 while ! ping -c1 -W0.3 "$pingcheckhost" > /dev/null; do
   sleep 0.2
 done
@@ -70,6 +70,7 @@ grub-install --target=x86_64-efi --efi-directory=/mnt/boot/efi --bootloader-id=G
 printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/efi/startup.nsh
 
 # Configure Default User
+echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 echo '%wheel      ALL=(ALL) ALL' | sudo EDITOR='tee -a' visudo
 noauthsudo="Defaults:$newuser      "'!authenticate'
