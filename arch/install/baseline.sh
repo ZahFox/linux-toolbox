@@ -1,6 +1,9 @@
 # Initial Configuration
 newuser="zahfox"
+fware="EFI"
+ptable="GPT"
 disk=/dev/sda
+
 pub="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDO96Mkloi3oGjxBrsoiNCs+eDmA/zG3Er3z9MX0JftEOpE5fkkz1yOV7TFHbl3WQRQb7vl2rH2tJ3ViEV/YWtVo0XNhcPygdYdNMPamKh0TQvm4WZretbVVRiXJAFT17phDmsS28xDZ+BJqebJLMALqKMnKs8gZnCHhEaFRiRUsUOJPB6yI0MyqVBftUXv/h0Vi9kuZUpZ4GWtTJYtjoDeozlQF2S91vA3Db+Hc4uq3DsFMdcMDv5FTkDAt8xWqaTQ9WLn7Q8Vnkz3XllHPp0G96/60lRGd6hI/BHTIqhDBHYFZtkZFhZW84bmql6YsLA8OxAqzXXV0FPt2vaKt+mB William@ULTRA-REX"
 hostname="oculi"$[ 1 + $[ RANDOM % 10 ]]""
 pingcheckhost="www.gooogle.com"
@@ -31,21 +34,29 @@ reflector --verbose --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
 
 # Partition, Format, and Mount Hard Disk
 sgdisk -Z $disk
-sgdisk -n 0:0:+500M -t 0:ef00 -c 0:"efi" $disk
-sgdisk -n 0:0:+1G -t 0:8300 -c 0:"boot" $disk
-sgdisk -n 0:0:+1G -t 0:8200 -c 0:"swap" $disk
-sgdisk -n 0:0:0 -t 0:8300 -c 0:"root" $disk
+if [ "$fware" = "BIOS" ]; then
+  sgdisk -n 0:0:+200M -t 0:ef0 -c 0:"bios" $disk
+  sgdisk -n 0:0:+1G -t 0:8300 -c 0:"boot" $disk
+  sgdisk -n 0:0:+1G -t 0:8200 -c 0:"swap" $disk
+  sgdisk -n 0:0:0 -t 0:8300 -c 0:"root" $disk
+  mkfs.fat -F 32 -n bios_grub ${disk}1
+else
+  sgdisk -n 0:0:+550M -t 0:ef00 -c 0:"efi" $disk
+  sgdisk -n 0:0:+1G -t 0:8300 -c 0:"boot" $disk
+  sgdisk -n 0:0:+1G -t 0:8200 -c 0:"swap" $disk
+  sgdisk -n 0:0:0 -t 0:8300 -c 0:"root" $disk
+  mkfs.fat -F 32 -n EFI ${disk}1
+fi
 
 mkfs.ext4 -F ${disk}2
 mkfs.ext4 -F ${disk}4
-mkfs.fat -F 32 -n EFI ${disk}1
 mkswap ${disk}3
 swapon ${disk}3
 mount ${disk}4 /mnt
 mkdir /mnt/boot
 mount ${disk}2 /mnt/boot
-mkdir /mnt/boot/efi
-mount ${disk}1 /mnt/boot/efi
+mkdir /mnt/boot/loader
+mount ${disk}1 /mnt/boot/loader
 
 # Install New Packages
 pacstrap /mnt $(echo $packages)
@@ -66,8 +77,8 @@ arch-chroot /mnt systemctl start dhcpcd
 arch-chroot /mnt mkinitcpio -p linux
 
 # Install Boot Loader (GRUB)
-grub-install --target=x86_64-efi --efi-directory=/mnt/boot/efi --bootloader-id=GRUB --root-directory=/mnt
-printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/efi/startup.nsh
+grub-install --target=x86_64-efi --efi-directory=/mnt/boot/loader --bootloader-id=GRUB --root-directory=/mnt
+printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/loader/startup.nsh
 sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /mnt/etc/default/grub
 echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
