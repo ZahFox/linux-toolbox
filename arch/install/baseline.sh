@@ -1,7 +1,7 @@
 # Initial Configuration
 newuser="zahfox"
 disk=/dev/sda
-ssh_key="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDO96Mkloi3oGjxBrsoiNCs+eDmA/zG3Er3z9MX0JftEOpE5fkkz1yOV7TFHbl3WQRQb7vl2rH2tJ3ViEV/YWtVo0XNhcPygdYdNMPamKh0TQvm4WZretbVVRiXJAFT17phDmsS28xDZ+BJqebJLMALqKMnKs8gZnCHhEaFRiRUsUOJPB6yI0MyqVBftUXv/h0Vi9kuZUpZ4GWtTJYtjoDeozlQF2S91vA3Db+Hc4uq3DsFMdcMDv5FTkDAt8xWqaTQ9WLn7Q8Vnkz3XllHPp0G96/60lRGd6hI/BHTIqhDBHYFZtkZFhZW84bmql6YsLA8OxAqzXXV0FPt2vaKt+mB William@ULTRA-REX"
+pub="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDO96Mkloi3oGjxBrsoiNCs+eDmA/zG3Er3z9MX0JftEOpE5fkkz1yOV7TFHbl3WQRQb7vl2rH2tJ3ViEV/YWtVo0XNhcPygdYdNMPamKh0TQvm4WZretbVVRiXJAFT17phDmsS28xDZ+BJqebJLMALqKMnKs8gZnCHhEaFRiRUsUOJPB6yI0MyqVBftUXv/h0Vi9kuZUpZ4GWtTJYtjoDeozlQF2S91vA3Db+Hc4uq3DsFMdcMDv5FTkDAt8xWqaTQ9WLn7Q8Vnkz3XllHPp0G96/60lRGd6hI/BHTIqhDBHYFZtkZFhZW84bmql6YsLA8OxAqzXXV0FPt2vaKt+mB William@ULTRA-REX"
 hostname="oculi"$[ 1 + $[ RANDOM % 10 ]]""
 pingcheckhost="www.gooogle.com"
 timezone=America/Chicago
@@ -82,7 +82,7 @@ touch /mnt/root/.ssh/authorized_keys
 chmod 700 /mnt/root/.ssh
 chmod 600 /mnt/root/.ssh/authorized_keys
 cat <<EOF > /mnt/root/.ssh/authorized_keys
-$ssh_key
+$pub
 EOF
 
 mkdir /mnt/home/$newuser/.ssh
