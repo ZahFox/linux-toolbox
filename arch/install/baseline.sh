@@ -36,8 +36,8 @@ sgdisk -n 0:0:+1G -t 0:8300 -c 0:"boot" $disk
 sgdisk -n 0:0:+1G -t 0:8200 -c 0:"swap" $disk
 sgdisk -n 0:0:0 -t 0:8300 -c 0:"root" $disk
 
-mkfs.ext4 ${disk}2
-mkfs.ext4 ${disk}4
+mkfs.ext4 -F ${disk}2
+mkfs.ext4 -F ${disk}4
 mkfs.fat -F 32 -n EFI ${disk}1
 mkswap ${disk}3
 swapon ${disk}3
