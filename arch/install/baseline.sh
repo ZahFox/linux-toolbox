@@ -68,13 +68,14 @@ arch-chroot /mnt mkinitcpio -p linux
 # Install Boot Loader (GRUB)
 grub-install --target=x86_64-efi --efi-directory=/mnt/boot/efi --bootloader-id=GRUB --root-directory=/mnt
 printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/efi/startup.nsh
-
-# Configure Default User
+sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /mnt/etc/default/grub
 echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
-echo '%wheel      ALL=(ALL) ALL' | sudo EDITOR='tee -a' visudo
+
+# Configure Default User
+arch-chroot /mnt echo '%wheel      ALL=(ALL) ALL' | sudo EDITOR='tee -a' visudo
 noauthsudo="Defaults:$newuser      "'!authenticate'
-echo $noauthsudo | sudo EDITOR='tee -a' visudo
+arch-chroot /mnt echo $noauthsudo | sudo EDITOR='tee -a' visudo
 arch-chroot /mnt useradd -m -g users -G wheel $newuser
 
 # Configure SSH
