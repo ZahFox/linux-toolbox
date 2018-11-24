@@ -94,4 +94,3 @@ arch-chroot /mnt passwd -d $newuser
 arch-chroot /mnt systemctl enable multi-user.target sshd
 
 sync
-systemctl reboot
