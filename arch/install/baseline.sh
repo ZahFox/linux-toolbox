@@ -71,7 +71,6 @@ echo "127.0.0.1     localhost" >> /mnt/etc/hosts
 echo "::1           localhost" >> /mnt/etc/hosts
 echo "127.0.1.1     ${hostname}.localdomain ${hostname}" >> /mnt/etc/hosts
 arch-chroot /mnt systemctl enable dhcpcd
-arch-chroot /mnt systemctl start dhcpcd
 arch-chroot /mnt mkinitcpio -p linux
 
 # Install Boot Loader (GRUB)
@@ -89,9 +88,8 @@ echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 # Configure Default User
-arch-chroot /mnt echo '%wheel      ALL=(ALL) ALL' | sudo EDITOR='tee -a' visudo
-noauthsudo="Defaults:$newuser      "'!authenticate'
-arch-chroot /mnt echo $noauthsudo | sudo EDITOR='tee -a' visudo
+sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
+echo "Defaults:$newuser    "'!authenticate' >> /etc/sudoers
 arch-chroot /mnt useradd -m -g users -G wheel $newuser
 
 # Configure SSH
