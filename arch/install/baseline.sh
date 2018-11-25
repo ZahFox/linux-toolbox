@@ -123,8 +123,8 @@ cp $inputrc /mnt/home/$newuser/.inputrc
 cp $bashrc /mnt/home/$newuser/.bashrc
 
 # Configure Vim
-cp -Rf "${vim_base}*" /mnt/root/
-cp -Rf "${vim_base}*" /mnt/home/$newuser/
+cp -Rf ${vim_base}. /mnt/root/
+cp -Rf ${vim_base}. /mnt/home/$newuser/
 
 # Configure SSH
 mkdir /mnt/root/.ssh
