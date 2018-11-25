@@ -1,6 +1,6 @@
 # Initial Configuration
 newuser="zahfox"
-fware="BIOS"
+fware="EFI"
 ptable="GPT"
 disk=/dev/sda
 
