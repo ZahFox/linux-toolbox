@@ -107,8 +107,11 @@ arch-chroot /mnt useradd -m -g users -G wheel $newuser
 
 # Configure Dotfiles
 inputrc="${dotfiles_base}.inputrc"
+bashrc="${dotfiles_base}.bashr"
 cp $inputrc /mnt/root/.inputrc
+cp $bashrc /mnt/root/.inputrc
 cp $inputrc /mnt/home/$newuser/.inputrc
+cp $bashrc /mnt/home/$newuser/.inputrc
 
 # Configure SSH
 mkdir /mnt/root/.ssh
