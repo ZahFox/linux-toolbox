@@ -104,7 +104,6 @@ sed -i "s/$caps_keycode = Caps_Lock/$escape_keycode = Caps_Lock/g" /tmp/custom.m
 sed -i "s/$escape_keycode = Escape/$caps_keycode = Escape/g" /tmp/custom.map
 mv /tmp/custom.map /mnt/usr/share/kbd/keymaps/i386/qwerty/custom.map
 gzip -f /mnt/usr/share/kbd/keymaps/i386/qwerty/custom.map
-arch-chroot /mnt localectl set-keymap custom
 echo 'KEYMAP=custom' > /mnt/etc/vconsole.conf
 
 # Configure Default User
