@@ -1,4 +1,5 @@
 # Initial Configuration
+base=/tmp/install/linux-toolbox/arch/install/
 newuser="zahfox"
 fware=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
 ptable="GPT"
@@ -75,11 +76,7 @@ arch-chroot /mnt mkinitcpio -p linux
 
 # Make a Custom Login Screen (that displays the host's IP address)
 printf "[Unit]\nDescription=/etc/rc.local compatibility\nWants=network-online.target\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/bash /etc/rc.local\n\n[Install]\nWantedBy=multi-user.target\n" > /mnt/etc/systemd/system/rc-local.service
-iprgx='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
-cl_line0='#!/bin/bash'
-cl_line1='IP=$(ip route get 1 | grep -Eo "$iprgx" | tail -1)'
-cl_line2='echo "HOST IP ADDRESS: $IP" > /etc/issue'
-printf "$cl_line0\n\niprgx='$iprgx'\n\n$cl_line1\n$cl_line2\n\nexit 0\n" > /mnt/etc/rc.local
+cat "${base}rc.local" > /mnt/etc/rc.local
 chmod +x /mnt/etc/rc.local
 arch-chroot /mnt systemctl enable rc-local.service
 

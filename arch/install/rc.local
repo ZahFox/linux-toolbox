@@ -1,0 +1,36 @@
+#!/bin/bash   
+
+iprgx='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)'
+
+# I put this into a function since you will be looping on it.
+# the error you are seeing is from the ip call - I pipe the error to
+# /dev/null to get rid of that annoyance.
+getIP() {
+  echo "IP=$(/sbin/ip route get 1 2>/dev/null | awk '{print $NF;exit}' | grep -Eo "$iprgx")"
+}
+
+# watchdog timer - bail if it doesn't resolve after some delta-T
+wdTimer=1
+IP=$(getIP)
+#echo "($wdTimer) IP: $IP"
+while [ "$IP" == "" ]; do
+  # There's nothing special about .5 seconds - just seemed reasonable
+  sleep 0.5
+  IP=$(getIP)
+  #echo "($wdTimer) IP: $IP"
+  ((wdTimer++))
+  # Arbitrarily chosen timeout of 20 * 0.5 = 10 seconds
+  # You can have it wait as long as you want. I suggest not
+  # setting the sleep time too low as you'll be hammering on the
+  # ip utility fairly hardly in that case; not a huge deal regardless
+  # I also had it log something to the syslog - your mileage may vary
+  # with logger - there are alternative ways to do that.
+  if [ "$wdTimer" -gt "20" ]; then
+    # timeout
+    logger -s "Timed out attempting to acquire LAN IP in rc.local"
+    exit 1
+  fi
+done
+
+printf "HOST IP ADDRESS: $IP\n\n" > /etc/issue
+exit 0
