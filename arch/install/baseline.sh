@@ -100,10 +100,10 @@ arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 dumpkeys > /tmp/custom.map
 caps_keycode=$(cat /tmp/custom.map | grep "Caps_Lock" | awk '{print $2}' | head -1)
 escape_keycode=$(cat /tmp/custom.map | grep "Escape" | awk '{print $2}' | head -1)
-sed -i "s/$caps_keycode = Caps_Lock/$escape_keycode = Caps_Lock/" /tmp/custom.map
-sed -i "s/$escape_keycode = Escape/$caps_keycode = Escape/" /tmp/custom.map
+sed -i "s/$caps_keycode = Caps_Lock/$escape_keycode = Caps_Lock/g" /tmp/custom.map
+sed -i "s/$escape_keycode = Escape/$caps_keycode = Escape/g" /tmp/custom.map
 mv /tmp/custom.map /mnt/usr/share/kbd/keymaps/i386/qwerty/custom.map
-gzip /mnt/usr/share/kbd/keymaps/i386/qwerty/custom.map
+gzip -f /mnt/usr/share/kbd/keymaps/i386/qwerty/custom.map
 arch-chroot /mnt localectl set-keymap custom
 echo 'KEYMAP=custom' > /mnt/etc/vconsole.conf
 
