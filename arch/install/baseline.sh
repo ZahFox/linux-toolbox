@@ -1,5 +1,7 @@
 # Initial Configuration
-base=/tmp/install/linux-toolbox/arch/install/
+arch_base=/tmp/install/linux-toolbox/arch/
+dotfiles_base="${arch_base}dotfiles/"
+install_base="${arch_base}install/"
 newuser="zahfox"
 fware=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
 ptable="GPT"
@@ -76,7 +78,7 @@ arch-chroot /mnt mkinitcpio -p linux
 
 # Make a Custom Login Screen (that displays the host's IP address)
 printf "[Unit]\nDescription=/etc/rc.local compatibility\nWants=network-online.target\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/bash /etc/rc.local\n\n[Install]\nWantedBy=multi-user.target\n" > /mnt/etc/systemd/system/rc-local.service
-cat "${base}rc.local" > /mnt/etc/rc.local
+cat "${install_base}rc.local" > /mnt/etc/rc.local
 chmod +x /mnt/etc/rc.local
 arch-chroot /mnt systemctl enable rc-local.service
 
@@ -94,10 +96,19 @@ sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /mnt/etc/default/grub
 echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
+# Custom Key Mappings
+caps_keycode=$(dumpkeys | grep "Caps_Lock" | awk '{print $2}' | head -1)
+escape_keycode=$(dumpkeys | grep "Escape" | awk '{print $2}' | head -1)
+
 # Configure Default User
 sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /mnt/etc/sudoers
 echo "Defaults:$newuser    "'!authenticate' >> /mnt/etc/sudoers
 arch-chroot /mnt useradd -m -g users -G wheel $newuser
+
+# Configure Dotfiles
+inputrc="${dotfiles_base}.inputrc"
+cp $inputrc /mnt/root/.inputrc
+cp $inputrc /mnt/home/$newuser/.inputrc
 
 # Configure SSH
 mkdir /mnt/root/.ssh
