@@ -1,5 +1,7 @@
 # Initial Configuration
-arch_base=/tmp/install/linux-toolbox/arch/
+base=/tmp/install/linux-toolbox/
+arch_base="${base}arch/"
+vim_base="${base}vim/"
 dotfiles_base="${arch_base}dotfiles/"
 install_base="${arch_base}install/"
 newuser="zahfox"
@@ -119,6 +121,10 @@ cp $inputrc /mnt/root/.inputrc
 cp $bashrc /mnt/root/.bashrc
 cp $inputrc /mnt/home/$newuser/.inputrc
 cp $bashrc /mnt/home/$newuser/.bashrc
+
+# Configure Vim
+cp -Rf "${vim_base}*" /mnt/root/
+cp -Rf "${vim_base}*" /mnt/home/$newuser/
 
 # Configure SSH
 mkdir /mnt/root/.ssh
