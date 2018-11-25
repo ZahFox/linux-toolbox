@@ -55,8 +55,6 @@ swapon ${disk}3
 mount ${disk}4 /mnt
 mkdir /mnt/boot
 mount ${disk}2 /mnt/boot
-mkdir /mnt/boot/loader
-mount ${disk}1 /mnt/boot/loader
 
 # Install New Packages
 pacstrap /mnt $(echo $packages)
@@ -80,6 +78,8 @@ arch-chroot /mnt mkinitcpio -p linux
 if [ "$fware" = "BIOS" ]; then
   grub-install --target=i386-pc --recheck $disk --root-directory=/mnt
 else
+  mkdir /mnt/boot/loader
+  mount ${disk}1 /mnt/boot/loader
   grub-install --target=x86_64-efi --efi-directory=/mnt/boot/loader --bootloader-id=GRUB --root-directory=/mnt
   printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/loader/startup.nsh
 fi
