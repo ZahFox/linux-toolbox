@@ -1,6 +1,6 @@
 # Initial Configuration
 newuser="zahfox"
-fware="EFI"
+fware="BIOS"
 ptable="GPT"
 disk=/dev/sda
 
@@ -35,7 +35,7 @@ reflector --verbose --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
 # Partition, Format, and Mount Hard Disk
 sgdisk -Z $disk
 if [ "$fware" = "BIOS" ]; then
-  sgdisk -n 0:0:+200M -t 0:ef0 -c 0:"bios" $disk
+  sgdisk -n 0:0:+200M -t 0:ef02 -c 0:"bios" $disk
   sgdisk -n 0:0:+1G -t 0:8300 -c 0:"boot" $disk
   sgdisk -n 0:0:+1G -t 0:8200 -c 0:"swap" $disk
   sgdisk -n 0:0:0 -t 0:8300 -c 0:"root" $disk
@@ -77,8 +77,13 @@ arch-chroot /mnt systemctl start dhcpcd
 arch-chroot /mnt mkinitcpio -p linux
 
 # Install Boot Loader (GRUB)
-grub-install --target=x86_64-efi --efi-directory=/mnt/boot/loader --bootloader-id=GRUB --root-directory=/mnt
-printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/loader/startup.nsh
+if [ "$fware" = "BIOS" ]; then
+  grub-install --target=i386-pc --recheck $disk --root-directory=/mnt
+else
+  grub-install --target=x86_64-efi --efi-directory=/mnt/boot/loader --bootloader-id=GRUB --root-directory=/mnt
+  printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/loader/startup.nsh
+fi
+
 sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /mnt/etc/default/grub
 echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
