@@ -88,8 +88,8 @@ echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
 arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 # Configure Default User
-sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /etc/sudoers
-echo "Defaults:$newuser    "'!authenticate' >> /etc/sudoers
+sed -i 's/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/' /mnt/etc/sudoers
+echo "Defaults:$newuser    "'!authenticate' >> /mnt/etc/sudoers
 arch-chroot /mnt useradd -m -g users -G wheel $newuser
 
 # Configure SSH
