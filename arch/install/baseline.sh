@@ -1,6 +1,6 @@
 # Initial Configuration
 newuser="zahfox"
-fware="EFI"
+fware=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
 ptable="GPT"
 disk=/dev/sda
 
