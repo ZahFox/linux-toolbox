@@ -6,7 +6,7 @@ iprgx='(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0
 # the error you are seeing is from the ip call - I pipe the error to
 # /dev/null to get rid of that annoyance.
 getIP() {
-  echo $(/sbin/ip route get 1 2>/dev/null | awk '{print $NF;exit}' | grep -Eo "$iprgx")
+  echo $(/sbin/ip route get 1 2>/dev/null | grep -Eo "$iprgx" | tail -1)
 }
 
 # watchdog timer - bail if it doesn't resolve after some delta-T
