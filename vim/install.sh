@@ -15,3 +15,4 @@ echo "Installing Vim configuration in the following directory: $INSTALL_DIR"
 mkdir -p $INSTALL_DIR/.vim
 cp $VIM_DIR/.vimrc $INSTALL_DIR/.vimrc
 cp -r $VIM_DIR/.vim/* $INSTALL_DIR/.vim/
+vim +'PlugInstall --sync' +qa
