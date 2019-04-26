@@ -124,10 +124,13 @@ cp $inputrc /mnt/root/.inputrc
 cp $bashrc /mnt/root/.bashrc
 cp $inputrc /mnt/home/$newuser/.inputrc
 cp $bashrc /mnt/home/$newuser/.bashrc
+chown $newuser /mnt/home/$newuser/.inputrc
+chown $newuser /mnt/home/$newuser/.bashrc
 
 # Configure Vim
 cp -Rf ${vim_base}. /mnt/root/
 cp -Rf ${vim_base}. /mnt/home/$newuser/
+chown -R $newuser /mnt/home/$newuser
 
 # Configure SSH
 mkdir /mnt/root/.ssh
