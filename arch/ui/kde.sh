@@ -1,5 +1,7 @@
 #!/bin/bash
 
+userdir="/home/$user"
+
 packages="xorg-server \
   xorg-apps \
   xorg-xinit \
@@ -10,5 +12,6 @@ packages="xorg-server \
   latte-dock"
 
 pacman --noconfirm -Syu $packages
+echo "setxkbmap -option caps:swapescape" >> $userdir/.bashrc
 
 systemctl enable sddm

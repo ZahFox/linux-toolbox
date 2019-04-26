@@ -18,5 +18,4 @@ alias pacclean='sudo pacman -Rns $(pacman -Qtdq)'
 export VISUAL="vim"
 export EDITOR=vim
 
-setxkbmap -option caps:swapescape
 neofetch
