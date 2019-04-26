@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Initial Configuration
 base=/tmp/install/linux-toolbox/
 arch_base="${base}arch/"
@@ -23,6 +25,7 @@ packages="base \
   grub \
   htop \
   net-tools \
+  neofetch \
   openssh \
   sudo \
   tmux \
