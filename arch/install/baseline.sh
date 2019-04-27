@@ -17,8 +17,10 @@ pingcheckhost="www.gooogle.com"
 timezone=America/Chicago
 lang="en_US.UTF-8"
 locale="$lang UTF-8"
-packages="base \
+packages="arch-install-scripts \
+  base \
   base-devel \
+  bash-completion \
   dialog \
   fzf \
   git \
@@ -26,10 +28,14 @@ packages="base \
   htop \
   net-tools \
   neofetch \
+  networkmanager \
   openssh \
+  pkgfile \
+  rmlint \
   sudo \
   tmux \
   tree \
+  ufw \
   vim \
   zsh"
 
@@ -78,7 +84,10 @@ echo "LANG=$lang" > /mnt/etc/locale.conf
 echo "127.0.0.1     localhost" >> /mnt/etc/hosts
 echo "::1           localhost" >> /mnt/etc/hosts
 echo "127.0.1.1     ${hostname}.localdomain ${hostname}" >> /mnt/etc/hosts
-arch-chroot /mnt systemctl enable dhcpcd
+# arch-chroot /mnt systemctl enable dhcpcd
+arch-chroot /mnt systemctl disable dhcpcd
+arch-chroot /mnt systemctl enable NetworkManager
+
 arch-chroot /mnt mkinitcpio -p linux
 
 # Make a Custom Login Screen (that displays the host's IP address)
@@ -148,5 +157,9 @@ chmod 600 /mnt/home/$newuser/.ssh/authorized_keys
 arch-chroot /mnt chown -R $newuser:users /home/$newuser/.ssh
 arch-chroot /mnt passwd -d $newuser
 arch-chroot /mnt systemctl enable multi-user.target sshd
+
+# Configure Firewall
+arch-chroot /mnt ufw enable
+arch-chroot /mnt systemctl enable ufw.service
 
 sync

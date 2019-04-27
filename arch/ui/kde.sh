@@ -1,6 +1,6 @@
 #!/bin/bash
 
-userdir="/home/$user"
+userdir="/home/$newuser"
 
 packages="xorg-server \
   xorg-apps \
@@ -9,7 +9,10 @@ packages="xorg-server \
   plasma \
   kde-applications \
   firefox \
-  latte-dock"
+  latte-dock \
+  kvantum-qt5 \
+  plasma-nm \
+  plasma-pa"
 
 pacman --noconfirm -Syu $packages
 echo "setxkbmap -option caps:swapescape" >> $userdir/.bashrc
