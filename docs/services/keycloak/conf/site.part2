@@ -1,0 +1,45 @@
+map $sent_http_content_type $expires {
+    default                    off;
+    text/html                  epoch;
+    text/css                   max;
+    application/javascript     max;
+    application/woff2          max;
+    ~image/                    30d;
+}
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name example.com;
+
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    ##
+     # SSL configuration
+    ##
+
+    listen 443 ssl default_server;
+    listen [::]:443 ssl default_server;
+    server_name example.com;
+
+    expires $expires;
+
+    include /etc/nginx/snippets/ssl-example.com.conf;
+    include /etc/nginx/snippets/ssl-params.conf;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    location ~ /.well-known {
+        allow all;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}

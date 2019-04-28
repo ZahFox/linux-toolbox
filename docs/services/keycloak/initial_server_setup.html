@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <title>Initial Keycloak Server Setup</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css" integrity="sha384-9eLZqc9ds8eNjO3TmqPeYcDj8n+Qfa4nuSiGYa6DjLNcv9BtN69ZIulL9+8CqC9Y" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+        <link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        
+        <script src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+    </head>
+    <body>
+        <h1 id="initial-keycloak-server-setup">Initial Keycloak Server Setup</h1>
+<h2 id="pregame">Pregame</h2>
+<pre><code class="language-bash"><div>sudo yum -y install epel-release wget gunzip vim firewalld
+sudo yum -y update
+sudo systemctl <span class="hljs-built_in">enable</span> firewalld &amp;&amp; sudo systemctl start firewalld
+sudo firewall-cmd --zone=public --permanent --add-service=http
+sudo firewall-cmd --zone=public --permanent --add-service=https
+sudo firewall-cmd --reload
+</div></code></pre>
+<h2 id="install-jdk">Install JDK</h2>
+<pre><code class="language-bash"><div><span class="hljs-built_in">cd</span> /tmp
+wget --no-cookies --no-check-certificate --header <span class="hljs-string">"Cookie: oraclelicense=accept-securebackup-cookie"</span> \
+  http://download.oracle.com/otn-pub/java/jdk/10.0.2+13/19aef61b38124481863b1413dce1855f/jdk-10.0.2_linux-x64_bin.tar.gz
+sudo tar zxf jdk-10.0.2_linux-x64_bin.tar.gz -C /usr/<span class="hljs-built_in">local</span>
+sudo mv /usr/<span class="hljs-built_in">local</span>/jdk-10.0.2 /usr/<span class="hljs-built_in">local</span>/jdk-10
+sudo alternatives --install /usr/bin/java java /usr/<span class="hljs-built_in">local</span>/jdk-10/bin/java 2
+sudo alternatives --<span class="hljs-built_in">set</span> java /usr/<span class="hljs-built_in">local</span>/jdk-10/bin/java
+sudo alternatives --install /usr/bin/jar jar /usr/<span class="hljs-built_in">local</span>/jdk-10/bin/jar 2
+sudo alternatives --install /usr/bin/javac javac /usr/<span class="hljs-built_in">local</span>/jdk-10/bin/javac 2
+sudo alternatives --<span class="hljs-built_in">set</span> jar /usr/<span class="hljs-built_in">local</span>/jdk-10/bin/jar
+sudo alternatives --<span class="hljs-built_in">set</span> javac /usr/<span class="hljs-built_in">local</span>/jdk-10/bin/javac
+<span class="hljs-built_in">echo</span> <span class="hljs-string">'export JAVA_HOME=/usr/local/jdk-10'</span> | sudo tee -a /etc/environment
+<span class="hljs-built_in">source</span> /etc/environment
+sudo sed -i <span class="hljs-string">'s/securerandom.source=file:\/dev\/random/securerandom.source=file:\/dev\/urandom/'</span> $(find <span class="hljs-variable">$JAVA_HOME</span> -name <span class="hljs-string">"java.security"</span>)
+</div></code></pre>
+<h2 id="install-keycloak">Install Keycloak</h2>
+<pre><code class="language-bash"><div><span class="hljs-built_in">cd</span> /opt
+sudo wget https://downloads.jboss.org/keycloak/4.4.0.Final/keycloak-4.4.0.Final.zip
+sudo gunzip keycloak-4.4.0.Final.zip
+sudo ln -s keycloak-4.4.0.Final/ keycloak
+sudo rm keycloak-4.4.0.Final.zip
+</div></code></pre>
+<h2 id="install-mariadb">Install MariaDB</h2>
+<h3 id="centos-7">CentOS 7</h3>
+<pre><code class="language-bash"><div>sudo touch /etc/yum.repos.d/MariaDB.repo
+<span class="hljs-built_in">echo</span> -e <span class="hljs-string">"[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.3.9/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1"</span> | sudo tee /etc/yum.repos.d/MariaDB.repo
+sudo yum -y update
+sudo yum -y install MariaDB-server MariaDB-client
+sudo systemctl <span class="hljs-built_in">enable</span> mariadb.service &amp;&amp; sudo systemctl start mariadb.service
+</div></code></pre>
+<h3 id="ubuntu-1804">Ubuntu 18.04</h3>
+<pre><code class="language-bash"><div>sudo apt-get -y install software-properties-common
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8
+sudo add-apt-repository <span class="hljs-string">'deb [arch=amd64] http://mirror.zol.co.zw/mariadb/repo/10.3/ubuntu bionic main'</span>
+sudo apt -y update
+sudo apt -y install mariadb-server mariadb-client
+sudo systemctl <span class="hljs-built_in">enable</span> mariadb.service &amp;&amp; sudo systemctl start mariadb.service
+</div></code></pre>
+<h2 id="secure-mariadb">Secure MariaDB</h2>
+<pre><code class="language-bash"><div>sudo mysql -e <span class="hljs-string">"UPDATE mysql.user SET Password = PASSWORD('password') WHERE User = 'root'"</span>
+sudo mysql -e <span class="hljs-string">"DROP USER ''@'localhost'"</span>
+sudo mysql -e <span class="hljs-string">"DROP USER ''@'<span class="hljs-variable">$(hostname)</span>'"</span>
+sudo mysql -e <span class="hljs-string">"DROP DATABASE test"</span>
+sudo mysql -e <span class="hljs-string">"DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')"</span>
+sudo mysql -e <span class="hljs-string">"FLUSH PRIVILEGES"</span>
+</div></code></pre>
+<h2 id="create-the-keycloak-database-and-database-user">Create the Keycloak Database and Database User</h2>
+<pre><code class="language-bash"><div><span class="hljs-built_in">echo</span> -e <span class="hljs-string">"SELECT * FROM information_schema.TABLE_STATISTICS;
+CREATE USER 'keycloak'@'%' IDENTIFIED BY 'keycloak';
+CREATE DATABASE keycloak CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+GRANT ALL PRIVILEGES ON keycloak.* TO 'keycloak'@'%';"</span> | sudo mysql -u root -ppassword
+</div></code></pre>
+<h2 id="install-mariadb-jdbc-driver-module-for-keycloak">Install MariaDB JDBC Driver Module for Keycloak</h2>
+<pre><code class="language-bash"><div>wget -P /tmp/ https://downloads.mariadb.com/Connectors/java/connector-java-2.3.0/mariadb-java-client-2.3.0.jar
+gunzip /tmp/mariadb-java-client-2.3.0.jar -d /tmp
+sudo mkdir -p /opt/keycloak/modules/system/layers/base/org/mariadb/main
+sudo cp /tmp/mariadb-java-client-2.3.0.jar /opt/keycloak/modules/system/layers/base/org/mariadb/main
+
+<span class="hljs-built_in">echo</span> -e <span class="hljs-string">"&lt;?xml version=\"1.0\" ?&gt;
+&lt;module xmlns=\"urn:jboss:module:1.3\" name=\"org.mariadb\"&gt;
+ &lt;resources&gt;
+  &lt;resource-root path=\"mariadb-java-client-2.3.0.jar\" /&gt;
+ &lt;/resources&gt;
+ &lt;dependencies&gt;
+  &lt;module name=\"javax.api\"/&gt;
+  &lt;module name=\"javax.transaction.api\"/&gt;
+ &lt;/dependencies&gt;
+&lt;/module&gt;"</span> &gt; /tmp/module.xml
+
+sudo cp /tmp/module.xml /opt/keycloak/modules/system/layers/base/org/mariadb/main/module.xml
+
+<span class="hljs-built_in">echo</span> -e <span class="hljs-string">"embed-server --server-config=standalone.xml
+/subsystem=datasources/jdbc-driver=mariadb:add(driver-name=mariadb,driver-module-name=org.mariadb,driver-class-name=org.mariadb.jdbc.Driver,driver-xa-datasource-class-name=org.mariadb.jdbc.MariaDbDataSource)"</span> &gt; /tmp/configure-db-driver.cli
+
+sudo /opt/keycloak/bin/jboss-cli.sh --file=/tmp/configure-db-driver.cli
+
+<span class="hljs-built_in">echo</span> -e <span class="hljs-string">"embed-server --server-config=standalone.xml
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=driver-name,value=mariadb)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=connection-url,value=\"jdbc:mariadb://localhost:3306/keycloak?characterEncoding=UTF-8\")
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=exception-sorter-class-name,value=org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=valid-connection-checker-class-name,value=org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=password,value=keycloak)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=user-name,value=keycloak)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=validate-on-match,value=true)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=background-validation,value=false)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=enabled,value=true)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=max-pool-size,value=20)
+/subsystem=datasources/data-source=KeycloakDS/:write-attribute(name=min-pool-size,value=5)"</span> &gt; /tmp/configure-datasource.cli
+
+sudo /opt/keycloak/bin/jboss-cli.sh --file=/tmp/configure-datasource.cli
+</div></code></pre>
+<h2 id="install-and-configure-nginx-part-1">Install and Configure Nginx Part 1</h2>
+<blockquote>
+<p>Place any Nginx configuration files in /tmp</p>
+</blockquote>
+<pre><code class="language-bash"><div><span class="hljs-built_in">echo</span> -e <span class="hljs-string">'[nginx]
+name=nginx repo
+baseurl=https://nginx.org/packages/mainline/centos/7/$basearch/
+gpgcheck=0
+enabled=1'</span> | sudo tee /etc/yum.repos.d/nginx.repo
+
+sudo yum -y update &amp;&amp; sudo yum -y install nginx
+sudo systemctl <span class="hljs-built_in">enable</span> nginx.service &amp;&amp; sudo systemctl start nginx.service
+sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.$(date <span class="hljs-string">"+%Y-%m-%d_%H:%M"</span>).conf
+sudo mv /tmp/nginx.conf /etc/nginx/nginx.conf
+sudo mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
+sudo mv /tmp/site.part1 /etc/nginx/sites-available/site
+sudo ln -s /etc/nginx/sites-available/site /etc/nginx/sites-enabled/site
+sudo systemctl restart nginx
+</div></code></pre>
+<h2 id="generate-ssltls-certificates-with-lets-encrypt-and-certbot">Generate SSL/TLS Certificates with Let's Encrypt and Certbot</h2>
+<pre><code class="language-bash"><div>sudo yum -y install python2-certbot-nginx
+sudo certbot --nginx
+sudo certbot certonly --nginx -d example.com --non-interactive --agree-tos -m zahfox@example.com
+sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+</div></code></pre>
+<h2 id="install-and-configure-nginx-part-2">Install and Configure Nginx Part 2</h2>
+<pre><code class="language-bash"><div>sudo mkdir -p /etc/nginx/snippets
+sudo mv /tmp/ssl-params.conf /etc/nginx/snippets/ssl-params.conf
+sudo mv /tmp/ssl-example.com.conf /etc/nginx/snippets/ssl-example.com.conf
+sudo mv /tmp/site.part1 /etc/nginx/sites-available/site
+sudo systemctl restart nginx.service
+</div></code></pre>
+
+    </body>
+    </html>

@@ -1,0 +1,50 @@
+map $sent_http_content_type $expires {
+    default                    off;
+    text/html                  epoch;
+    text/css                   max;
+    application/javascript     max;
+    application/woff2          max;
+    ~image/                    30d;
+}
+
+server {
+    listen 80;
+    server_name example.com;
+    return 301 https://$host$request_uri;
+    expires $expires;
+}
+
+server {
+	listen 443 ssl;
+	server_name example.com;
+	ssl_certificate /etc/nginx/certs/fullchain.pem;
+	ssl_certificate_key /etc/nginx/certs/privkey.pem;
+	
+	root /var/www/html;
+	index index.html;
+    expires $expires;
+						
+	autoindex off;
+
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }
+
+    location / {
+        if (!-e $request_filename){
+            rewrite ^(.*)$ /index.html break;
+        }
+    }
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+        expires max;
+        log_not_found off;
+    }
+}
