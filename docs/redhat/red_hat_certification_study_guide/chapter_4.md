@@ -154,7 +154,7 @@ The COMMIT ends the list of rules: `COMMIT`.
 
 ### The firewalld Service
 
-The **firewalld** service offers the same functionalities of the iptable tool and more. One off the new features of firewalld is *zone-based* firewalling. In a zone-based firewall, networks and interffaces are grouped into zones, with each zone configured with a different level of trust.
+The **firewalld** service offers the same functionalities of the iptable tool and more. One of the new features of firewalld is *zone-based* firewalling. In a zone-based firewall, networks and interfaces are grouped into zones, with each zone configured with a different level of trust.
 
 | **Zone** | **Outgoing Connections**                      | **Incoming Connections**                                              |
 | :------- | :-------------------------------------------- | :-------------------------------------------------------------------- |
@@ -181,7 +181,7 @@ The **firewall-cmd** configuration tool has the same features and services as th
 Display the default zone: `firewall-cmd --get-default-zone`
 Change the default zone: `firewall-cmd --set-default-zone=internal`
 List all the configured interfaces and services in a zone: `firewall-cmd --list-all`
-Add HTTP to the dmz zone: `firewall-cmd --zone=domz --add-service=http`
+Add HTTP to the dmz zone: `firewall-cmd --zone=dmz --add-service=http`
 Remove HTTP from the dmz zone: `firewall-cmd --zone=dmz --remove-service=http`
 Reload the firewall: `firewall-cmd --reload`
 
@@ -242,7 +242,7 @@ If you want to change the default SELinux mode, change the `SELINUX` directive i
 
 #### Configure Basic SELinux Settings
 
-To see the current status of SELinux, run the **getenforce** coomand; its returns on of three self-explanatory options: **enforcing**, **permissive**, or **disabled**. You may also use **sestatus**.
+To see the current status of SELinux, run the **getenforce** command; it returns one of three self-explanatory options: **enforcing**, **permissive**, or **disabled**. You may also use **sestatus**.
 
 Change the SELinux status to enforcing: `setenforce enforcing`
 Change the SELinux status to permissive: `setenforce permissive`
@@ -269,3 +269,121 @@ This command modifies (-m) the targeted policy store (-S), with SELinux user (-s
 | unconfined_u     | Full system access                                                                                 |
 
 #### Manage SELinux Boolean Settings
+
+Most SELinux settings are boolean. Once set, the booleans can be retrieved from the `sys/fs/selinux/booleans` directory. Each settings can be read with the `getsebool` and modified with the `setsebool` commands. Use the `-P` switch to make a `setsebool` change permanent.
+
+```bash
+getsebool user_exec_content
+setsebool user_exec_content off
+```
+
+List all available booleans: `getsebool -a`.
+Get information about each boolean: `semanage boolean -l`
+
+#### List and Identify SELinux File Contexts
+
+If you've enabled SELinux, the `ls -Z` command lists current SELinux file contexts. The key file context is the type (e.g., admin_home_t, user_home_t, public_content_t). To change the context, use the `chcon` command. If there are subdirectories, you'll want to make sure changes are made recursively with the -R switch.
+
+Example: `chcon -R -u system_u -t public_content_t /ftp`, or to also allow file uploads `chcon -R -u system_u -t public_content_rw_t /ftp`
+
+You can also apply one directories contexts to another like so: `chcon -R --reference <SOURCE_DIRECTORY> <DESTINATION_DIRECTORY>`.
+
+    Using `restorecon` is the preferred way to change file contexts because it sets the contexts to the values configured in the SELinux policy. The `chcon` command can modify file contexts to any value passed as an arguments, but the change may not survive a filesystem relabeling if a context differs from the default value defined in the SELinux policy. Hence, to avoid mistakes, you should modify contexts in the SELinux policy with `semanage fcontext` and use `restorecon` to change file contexts.
+
+#### Restore SELinux File Contexts
+
+Default contexts are configured in `/etc/selinux/targeted/contexts/files/file_contexts`. Use `restorecon` to set the default contexts for a file or directory: `restorecon -F <PATH>`.
+
+You may also list all default file contexts rules in file_contexts with the `semanage fcontext -l` command.
+
+Assign a default type context of public_content_t to a directory and all the files in it: `semanage fcontext -a -t public_content_t '/<DIRECTORY>(/.*)?'`. After running this command, you can run the `restorecon` command to set the contexts to new default values: `restorecon -RF <DIRECTORY>`.
+
+#### Identify SELinux Process Contexts
+
+In a SELinux system, there are contexts for each running process. To see those contexts for all processes currently in operation, run the `ps -eZ` command, which lists every (-e) process SELinux context (-Z).
+
+#### Diagnose and Address SELinux Policy Violations
+
+According to Red Hat, the top two causes of SELinux-related problems are contexts and boolean settings.
+
+##### SELinux Audits
+
+Problems with SELinux should be documented in the associated log file, audit.log, in the `/var/log/audit` directory. The audit search (**ausearch**) command can help filter for specific types of problems. For example, the following command lists all SELinux events associated with the use of the `sudo` command: `ausearch -m avc -c sudo`.
+
+Such events are known as Access Vector Cache (**-m avc**) messages; the **-c** allows you to specify the name commonly used in the log, such as httpd or su. Another command to read the logs is: `sealert -a /var/log/audit/audit.log`.
+
+### The GUI SELinux Administration Tool
+
+For many users, the easiest way to change SELinux settings is with the SELinux Administration tool, which you can start with the `system-config-selinux` command.
+
+## Scenario & Solution
+
+### A file can't be read, written to, or executed
+
+Review current ownership and permissions with the `ls -l` command. Apply ownership changes with the `chown` and `chgrp` commands. Apply permission changes with the `chmod` command.
+
+### Access to a secure file is required for a single user
+
+Configure an ACL using `setfacl` command to provide access.
+
+### The SSH service is not accessible on a server
+
+Assuming the SSH service is running (a RHCE requirement), make sure the firewall supports SSH access with the `firewall-cmd --list-all` command; revise as needed with the `firewall-config` tool.
+
+### Enforcing mode is not set for SELinux
+
+Set enforcing mode with the `setenforce enforcing` command. Check the default boot settings in `/etc/selinux/config`.
+
+### Need to restore SELinux default file contexts on a directory
+
+Apply the `restorecon -F` command to the target directory. Use the **-R** switch to change to contexts recursively for all files and subdirectories. 
+
+### Unexpected failure when SELinux is set in enforcing mode
+
+Use the `sealert -a /var/log/audit/audit.log` command or the SELinux Troubleshooter to find more information about the failure; sometimes a suggested solution is included.
+
+### Need to change SELinux options for a user
+
+Apply the `setsebool -P` command to the appropriate boolean setting.
+
+## Key Points
+
+### 1. Basic File Permissions
+
+* Standard Linux file permissions are read, write, and execute, which may vary for the user owner, the group owner, and other users.
+* Special permissions include the SUID, SGID, and sticky bits.
+* Default user permissions are based on the value of the `umask`.
+* Ownership and permissions can be changed with the `chown`, `chgrp`, and `chmod` commands.
+* Special file attributes can be listed with the `lsattr` command and modified by the `chattr` command.
+
+### 2. Access Control Lists and More
+
+* ACLs can be listed and modified on filesystems mounted with the **acl** option. The XFS and ext4 filesystems created on RHEL 7 have such an option enabled by default.
+* Every file already has ACLs based on standard ownership and permissions.
+* You can configure ACLs on a file to supersede standard ownership and permissions for specified users and groups on selected files. Actual ACLs may depend on the mask.
+* Custom ACLs on a file are not enough; selected users and groups also need access to the directories that contain such files.
+* Just as custom ACLs can support special access for selected users, they can also deny access to other selected users.
+* ACLs can be configured on shared NFS directories.
+
+### 3. Basic Firewall Control
+
+* Standard Linux firewalls are based on the Netfilter kernel system and on the `iptables` tool.
+* Standard Linux firewalls assume the use of some of the ports and protocols listed in `/etc/services`.
+* The default RHEL 7 firewall supports remote access to the local SSH server.
+* The RHEL 7 firewall can be configured with the GUI `firewall-config` tool or the console-based tool `firewall-cmd` command.
+
+### 4. Securing SSH with Key-Based Authentication
+
+* SSH configuration commands include `ssh-keygen` and `ssh-copy-id`.
+* User home directories include their own .ssh subdirectory of configuration files, with private and public SSH keys, suitable for passphrases.
+* Private/public key pairs can be configured with passphrases using the `ssh-keygen` command.
+* Public keys can be transmitted to users' home directories on remote systems with the `ssh-copy-id` command.
+
+### 4. A Security-Enhanced Linux Primer
+
+* SELinux may be configured in enforcing, permissive, or disabled mode, with targeted or MLS policies, with the help of the `setenforce` command. Default boot settings are stored in the `/etc/selinux/config` file.
+* User options for SELinux can be set with the `semanage login` command.
+* SELinux labels contain different contexts, such as user, roles, types, and MLS levels.
+* SELinux booleans can be managed with the `setsebool` command; permanenet changes require the -P switch.
+* SELinux contexts can be changed with `chcon` command and restored to defaults with the `restorecon` command.
+* The `sealert` command and the SELinux Troubleshoot Browser can be used to interpret problems documented in the audit.log file in the `/var/log/audit` directory.
