@@ -65,8 +65,109 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 
 ## Between GRUB 2 and Login
 
-> Continue here next time
+The loading of Linux depends on a temporary filesystem, known as the initial RAM disk. Once the boot process is complete, control is given to systemd, known as the first process.
+
+### Kernels and the Initial RAM Disk
+
+The initial RAM disk is located in the `/boot` directory and named `initramfs`.
+
+> To learn more about the systemd boot process, disable the **quiet** directive for the desired kernel in the GRUB configuration file. Affter logging in, the boot messages can be reviewed at the `/var/log/dmesg` ffile or by running the `dmesg` command.
+
+### The First Process, Targets, and Units
+
+The first process is **systemd**. In RHEL 7, the legacy **init** process is configured with a symbolic link to **systemd**.
+
+Units are the basic building blocks of systemd. The most common at _service units_, which have a .service extension and activate a system service. To show a list of all service units, type the following command: `systemctl list-unit --type=service --all`
+
+A specical type of unit is a _target unit_, which is used to group together other system units and to transition the system into a different state. The list all target units, type the following command: `systemctl list-units --type=target --all`
+
+| **Target Unit**   | **Description**                                                      |
+| :---------------- | :------------------------------------------------------------------- |
+| emergency.target  | Emergency shell; only the / filesystem is mounted in read-only mode. |
+| graphical.target  | The default target for multiuser graphical systems.                  |
+| multi-user.target | Nongraphical multiuser system.                                       |
+| rescue.target     | Emergency shell; all filesystems are mounted.                        |
+
+To list the dependencies of a target run: `systemctl list-dependencies <NAME>.target`
+To change the default target: `systemctl set-default <NAME>.target`
+
+### Switch Between Targets
+
+First, establish the default target: `systemctl get-default`.
+
+After logging in as the administrative user, you can move to a different target with the `systemctl isolate` command: `systemctl isolate multi-user.target`
+
+### Reboot and Shut Down a System Normally
+
+The commands required to reboot and shut down a system are straightforward. The following commands provider on way to shut down and reboot a system, respectively: `systemctl poweroff` and `systemctl reboot`.
+
+> To display the time required to boot your system, run the following command: `systemd-analyze times`. `systemd-analyze blame` will show the amount of time reuired to activate each systemd unit.
+
+### Logging
+
+The systemd process includes a powerful logging system. You can display all collected logs with the **journalctl** command.
+
+### cgroups
+
+The command **systemd-cgls** displays the cgroup hierarchy in a tree format. This is the dependencies between running processes and their associated services.
+
+### systemd Units
+
+The first process is systemd. The systemd process uses various configuation files to start other processes. You can find these configuration files in the following directories: `/etc/systemd/system` and `/usr/lib/systemd/system`.
+
+| **Unit Type** | **Description**                                                                                                       |
+| :------------ | :-------------------------------------------------------------------------------------------------------------------- |
+| Traget        | A group of units used as a synchronization point at startup.                                                          |
+| Service       | A service, such as a daemon like the Apache web server.                                                               |
+| Socket        | An IPC or network socket, used to activate a service when traffic is received on a listening socket.                  |
+| Device        | A device such as a drive or partition.                                                                                |
+| Mount         | A filesystem mount point controlled by systemd.                                                                       |
+| Automount     | A filesystem automount point controlled by systemd.                                                                   |
+| Swap          | A swap partition to be activated by systemd.                                                                          |
+| Path          | A path monitored by systemd, used to activate a service when a path changes.                                          |
+| Timer         | A timer controlled by systemd, used to activate a service when the timer elapses.                                     |
+| Snapshot      | Used to create a snapshot of the systemd run-time state.                                                              |
+| Slice         | A group of system resources (such as CPU, memory, and so on) that can be assigned to a unit via the cgroup interface. |
+| Scope         | A unit for organizing and managing resource utilization of a set of system processes.                                 |
 
 ## Control by Target
 
+### Service Configuration
+
+List service unit files: `systemctl list-unit-files --type=service`.
+
 ## Time Synchronization
+
+The configuration of a Network Time Protocol (NTP) client is straightforward. Therefore, this section provides an overview of the configuration files and the associated command tools.
+
+RHEL 7 includes RMPs for two NTP daemons: `ntpd` and `chronyd`. Typically, `ntdp` is recommended for systems that are always connected to the network, such as servers, whereas `chronyd` is the preferred choice for virtual and mobile systems.
+
+### Time Zone Configuration
+
+You can display a list of the available time zones by running the following command: `timedatectl list-timezones`. Then, to switch to a different time zone, run `timedatectl` with the `set-timezone` command. `timedatectl set-timezone <TIMEZONE>`.
+
+Example: `timedatectl set-timezone America/Los_Angeles`.
+
+### Sync the Time with chronyd
+
+The default `chronyd` configuration file is located at `/etc/chrony.conf`. To configure `chronyd` to synchronize with a different NTP server, just modify the **server** directives in `/etc/chrony.conf` and restart `chronyd`: `systemctl restart chronyd`.
+
+### Sync the Time with ntpd
+
+First, ensure that `chronyd` is stopped and disabled at boot because you cannot have both `chronyd` and `ntpd` running on the same machine:
+
+```bash
+systemctl stop chronyd.service
+systemctl disable chronyd.service
+```
+
+Next, install the ntp RPM package: `yum install ntp`. The default configuration file is `/etc/ntp.conf`. Once you have cusomtized this file, start and enable `ntpd`:
+
+```bash
+systemctl start ntpd.service
+systemctl enable ntpd.service
+```
+
+## Certification Summary
+
+> Continue here next time
