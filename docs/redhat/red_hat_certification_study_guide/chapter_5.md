@@ -1,4 +1,4 @@
-# Chapter 4 - The Boot Process
+# Chapter 5 - The Boot Process
 
 ## Bootloaders and GRUB 2
 
@@ -71,7 +71,7 @@ The loading of Linux depends on a temporary filesystem, known as the initial RAM
 
 The initial RAM disk is located in the `/boot` directory and named `initramfs`.
 
-> To learn more about the systemd boot process, disable the **quiet** directive for the desired kernel in the GRUB configuration file. Affter logging in, the boot messages can be reviewed at the `/var/log/dmesg` ffile or by running the `dmesg` command.
+> To learn more about the systemd boot process, disable the **quiet** directive for the desired kernel in the GRUB configuration file. Affter logging in, the boot messages can be reviewed at the `/var/log/dmesg` file or by running the `dmesg` command.
 
 ### The First Process, Targets, and Units
 
@@ -117,7 +117,7 @@ The first process is systemd. The systemd process uses various configuation file
 
 | **Unit Type** | **Description**                                                                                                       |
 | :------------ | :-------------------------------------------------------------------------------------------------------------------- |
-| Traget        | A group of units used as a synchronization point at startup.                                                          |
+| Target        | A group of units used as a synchronization point at startup.                                                          |
 | Service       | A service, such as a daemon like the Apache web server.                                                               |
 | Socket        | An IPC or network socket, used to activate a service when traffic is received on a listening socket.                  |
 | Device        | A device such as a drive or partition.                                                                                |
@@ -140,7 +140,7 @@ List service unit files: `systemctl list-unit-files --type=service`.
 
 The configuration of a Network Time Protocol (NTP) client is straightforward. Therefore, this section provides an overview of the configuration files and the associated command tools.
 
-RHEL 7 includes RMPs for two NTP daemons: `ntpd` and `chronyd`. Typically, `ntdp` is recommended for systems that are always connected to the network, such as servers, whereas `chronyd` is the preferred choice for virtual and mobile systems.
+RHEL 7 includes RPMs for two NTP daemons: `ntpd` and `chronyd`. Typically, `ntdp` is recommended for systems that are always connected to the network, such as servers, whereas `chronyd` is the preferred choice for virtual and mobile systems.
 
 ### Time Zone Configuration
 
@@ -170,4 +170,40 @@ systemctl enable ntpd.service
 
 ## Certification Summary
 
-> Continue here next time
+The key points from the certification objectives in Chapter 5.
+
+### 1. The BIOS and the UEFI
+
+- Although not strictly a part of the exam, it's important to know that basics of the BIOS and UEFI.
+- You can change the boot squence from the BIOS/UEFI menu.
+- Once the BIOS/UEFI detects the designated boot drive(s), it hands control to GRUB 2 via the Master Boot Record (MBR) or GUID Partition Table (GPT) of the appropriate drive.
+
+### 2. Bootloaders and GRUB 2
+
+- RHEL 7 uses GRUB 2.
+- The GRUB 2 configuration file is organized into sections.
+- From the GRUB 2 menu, you can boot into a systemd target other than the default.
+- You can even boot from a GRUB 2 menu into a rescue shell that provides root administrative access without and account password.
+- The GRUB 2 configuration file specifies a kernel, a root directory volume, and an initial RAM disk for each operating system.
+- If the GURB 2 conmfiguration file is missing, you may be able to boot from the `grub>` prompt with information on the `/boot` directory partition, the Linux kernel file, the top-level root directory, and the initial RAM disk file.
+
+### 3. Between GRUB 2 and Login
+
+- You can analyze boot messages through the `journalctl` command.
+- Default system targets are configured as a symbolic lnk from the `/etc/systemd/system` directory.
+- The systemd process has replaced Upstart and SysVinit as the first process. It has configuratioin files in the `/etc/systemd/system` and `/usr/lib/systemd/system` directories.
+- Once the kernel boots, it hands control to systemd, also known as the first process.
+
+### 4. Control by Target
+
+- The default target configured in `/etc/systemd/system` activated systemd units in the `/usr/lib/systemd/system` directory.
+- Target units can include other targets and units to be activated.
+- You can use `systemctl` to control a service with the start, stop, restart, reload, and other commands.
+- The services that start each target can also be controlled with `systemctl` and the enable/disable commands.
+
+### 5. Time Synchronization
+
+- The `timedatectl` tool can be used to check the current time, date, time zone, and NTP service status.
+- The default NTP service in RHEL 7 is chronyd. It keeps time in sync with servers configured in the `/etc/chrony.conf` file.
+- An alternative to chronyd is ntpd, which keeps its configuration settings in the `/etc/ntp.conf` file.
+- Do not run both chronyd and ntpd at the same time.
