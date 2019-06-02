@@ -99,32 +99,32 @@ The **iptables** command uses the following basic format:
 
 There are two options for `-t <TABLE_TYPE>`:
 
-* **filter** - Sets a rule for filtering packets.
-* **nat** - Configures network address translation, also known as masquerading, which is discussed later in Chapter 10.
+- **filter** - Sets a rule for filtering packets.
+- **nat** - Configures network address translation, also known as masquerading, which is discussed later in Chapter 10.
 
 The following are the options for `<ACTION_DIRECTION>`:
 
-* **-A (--append)** Appends a rule to the end of a chain.
-* **-D (--delete)** Deletes a rule from a chain. Specify the rule by the number or packet pattern.
-* **-L (--list)** Lists the currently configured rules in the chain.
-* **-F (--flush)** Flushes all the rules in the current iptables chain.
+- **-A (--append)** Appends a rule to the end of a chain.
+- **-D (--delete)** Deletes a rule from a chain. Specify the rule by the number or packet pattern.
+- **-L (--list)** Lists the currently configured rules in the chain.
+- **-F (--flush)** Flushes all the rules in the current iptables chain.
 
 For `-A` or `-D` you'll want to apply it to network data traveling in one of three directions:
 
-* **INPUT** - All incoming packets are checked against the rules in this chain.
-* **OUTPUT** - All outgoing packets are checked against the rules in this chain.
-* **FORWARD** - All packets received from a computer and being sent to another computer are checkd against the rules in this chain. In other words, these are packets that are *routed* through the local server.
+- **INPUT** - All incoming packets are checked against the rules in this chain.
+- **OUTPUT** - All outgoing packets are checked against the rules in this chain.
+- **FORWARD** - All packets received from a computer and being sent to another computer are checkd against the rules in this chain. In other words, these are packets that are _routed_ through the local server.
 
 `<PACKET_PATTERN>` is the next option. All **iptables** firewalls check every packet against this pattern. The simplest pattern is by IP address:
 
-* **-s *ip_address*** - All packets are checked for a specific source IP address.
-* **-d *ip_address*** - All packetes are checked for a specific destination IP address.
+- **-s _ip_address_** - All packets are checked for a specific source IP address.
+- **-d _ip_address_** - All packetes are checked for a specific destination IP address.
 
-Once the **iptables** command finds a packet pattern match, it needs to know what to do with that packet, which leads to the last part of the command, **-j *<WHAT_TO_DO>***. There are three basic options:
+Once the **iptables** command finds a packet pattern match, it needs to know what to do with that packet, which leads to the last part of the command, **-j _<WHAT_TO_DO>_**. There are three basic options:
 
-* **DROP** - The packet is dropped. No message is sent to the requesting computer.
-* **REJECT** - The packet is dropped. An error message is sent to the requesting computer.
-* **ACCEPT** - The packet is allowed to proceed as specified with the **-A** action: **INPUT**, **OUTPUT**, or **FORWARD**.
+- **DROP** - The packet is dropped. No message is sent to the requesting computer.
+- **REJECT** - The packet is dropped. An error message is sent to the requesting computer.
+- **ACCEPT** - The packet is allowed to proceed as specified with the **-A** action: **INPUT**, **OUTPUT**, or **FORWARD**.
 
 List all of the currently configured **iptables** chain rules: `# iptables -L`
 
@@ -154,7 +154,7 @@ The COMMIT ends the list of rules: `COMMIT`.
 
 ### The firewalld Service
 
-The **firewalld** service offers the same functionalities of the iptable tool and more. One of the new features of firewalld is *zone-based* firewalling. In a zone-based firewall, networks and interfaces are grouped into zones, with each zone configured with a different level of trust.
+The **firewalld** service offers the same functionalities of the iptable tool and more. One of the new features of firewalld is _zone-based_ firewalling. In a zone-based firewall, networks and interfaces are grouped into zones, with each zone configured with a different level of trust.
 
 | **Zone** | **Outgoing Connections**                      | **Incoming Connections**                                              |
 | :------- | :-------------------------------------------- | :-------------------------------------------------------------------- |
@@ -172,7 +172,7 @@ The **firewalld** service offers the same functionalities of the iptable tool an
 
 You can start the graphical firewalld configuration tool from a GUI-based command line with the **firewall-config** command. Alternatively, in the GNOME Desktop Environment, click `Applications | Sundry | Firewall`.
 
-In the main **firewall-config** windows, the public zone is displayed in a bold font to indicate that this zone is the *default zone*. The default zone has a special meaning: any new network interface added to the system is automatically assigned to the default zone. In addition, the rules of the default zone are processed for all incoming packets that do not match any of the other zones.
+In the main **firewall-config** windows, the public zone is displayed in a bold font to indicate that this zone is the _default zone_. The default zone has a special meaning: any new network interface added to the system is automatically assigned to the default zone. In addition, the rules of the default zone are processed for all incoming packets that do not match any of the other zones.
 
 #### The Console `firewall-cmd` Configuration Tool
 
@@ -193,25 +193,25 @@ Reload the firewall: `firewall-cmd --reload`
 
 There are a few SSH-oriented utilities you need to know about:
 
-* **sshd** - The daemon service; this must be running to receive inbound Secure Shell client requests.
-* **ssh-agent** - A program to hold private keys used for Digital Signature Algorithm (DSA), Elliptic Curve DSA (ECDSA), and Rivest Shamir, Adleman (RSA) authentication. The idea is that the **ssh-agent** command is started in the beginning of an X session or a login session, and other programs are started as clients to the **ssh-agent** program.
-* **ssh-add** - Adds private key identities to the authentication agent **ssh-agent**.
-* **ssh** - The Secure Shell command, **ssh**, is a secure way to log in to a remote machine, similar to Telnet or **rlogin**.
-* **ssh-keygen** - A utility that creates private/public key pairs for SSH authentication. The **ssh-keygen -t keytype** command will create a key pair based on the DSA, ECDSA, or RSA protocol.
-* **ssh-copy-id** - A script that copies a public key to a target remote system.
+- **sshd** - The daemon service; this must be running to receive inbound Secure Shell client requests.
+- **ssh-agent** - A program to hold private keys used for Digital Signature Algorithm (DSA), Elliptic Curve DSA (ECDSA), and Rivest Shamir, Adleman (RSA) authentication. The idea is that the **ssh-agent** command is started in the beginning of an X session or a login session, and other programs are started as clients to the **ssh-agent** program.
+- **ssh-add** - Adds private key identities to the authentication agent **ssh-agent**.
+- **ssh** - The Secure Shell command, **ssh**, is a secure way to log in to a remote machine, similar to Telnet or **rlogin**.
+- **ssh-keygen** - A utility that creates private/public key pairs for SSH authentication. The **ssh-keygen -t keytype** command will create a key pair based on the DSA, ECDSA, or RSA protocol.
+- **ssh-copy-id** - A script that copies a public key to a target remote system.
 
 ### SSH Client Configuration Files
 
 Systems configured with SSH include configuration files in two different directories. For the local system, basic SSH configuration files are stored in the `/etc/ssh` directory. For each user they are stored in the `~/.ssh/` subdirectory.
 
-* **authorized_keys** - Includes a list of public keys from remote users. Users with public encryption keys in this file can connect to remote systems. The system users and names are listed at the end of each public key copied to this file.
-* **id_dsa** - Includes the local private key based on the DSA algorithm.
-* **id_dsa.pub** - Includes the local public key for the user based on the DSA algorithm.
-* **id_ecdsa** - Includes the local private key based on the ECDSA algorithm.
-* **id_ecdsa.pub** - Includes the local public key for the user based on the ECDSA algorithm.
-* **id_rsa** - Includes the local private key based on the RSA algorithm.
-* **id_rsa.pub** - Includes the local public key for the user based on the RSA algorithm.
-* **known_hosts** - Contains the public host keys from remote systems.
+- **authorized_keys** - Includes a list of public keys from remote users. Users with public encryption keys in this file can connect to remote systems. The system users and names are listed at the end of each public key copied to this file.
+- **id_dsa** - Includes the local private key based on the DSA algorithm.
+- **id_dsa.pub** - Includes the local public key for the user based on the DSA algorithm.
+- **id_ecdsa** - Includes the local private key based on the ECDSA algorithm.
+- **id_ecdsa.pub** - Includes the local public key for the user based on the ECDSA algorithm.
+- **id_rsa** - Includes the local private key based on the RSA algorithm.
+- **id_rsa.pub** - Includes the local public key for the user based on the RSA algorithm.
+- **known_hosts** - Contains the public host keys from remote systems.
 
 ### Set Up a Private/Public Pair for Key-Based Authentication
 
@@ -223,9 +223,9 @@ Transmit public key to remote system: `ssh-copy-id -i <LOCAL_PUBLIC_KEY_PATH> <R
 
 Security-Enhanced Linux (SELinux) was developed by the U.S. National Security Agency to provide a level of mandatory access control (MAC) for Linux. It goes beyond the discretionary access control (DAC) associated with file permissions and ACLs.
 
-The SELinux security model is based on subjects, objects, and actions. A *subject* is a process, such as a running command or an application such as the Apache web server in operation. An *object* is a file, a device, a socket, or in general any resource that can be accessed by a subject. An *action* is what may be done by the subject to the object.
+The SELinux security model is based on subjects, objects, and actions. A _subject_ is a process, such as a running command or an application such as the Apache web server in operation. An _object_ is a file, a device, a socket, or in general any resource that can be accessed by a subject. An _action_ is what may be done by the subject to the object.
 
-SELinux assigns different contexts to objects. A *context* is just a label, which is used by the SELinux security policy to determine whether a subject's action on an object is allowed or not.
+SELinux assigns different contexts to objects. A _context_ is just a label, which is used by the SELinux security policy to determine whether a subject's action on an object is allowed or not.
 
 ### SELinux Status
 
@@ -253,7 +253,7 @@ To review the status of current SELinux users, run the `semanage login -l` comma
 
 Default status: `unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023`
 
-This status is called a *label* in SELinux jargon. A label is made up of several context strings, separated by a column: a user context (which ends with a _u), a role context (which ends with a _r), a type context (which ends with a _t), a sensitivity context, and a category set. The rules of the targeted policy are mostly associated with the type (_t) context.
+This status is called a _label_ in SELinux jargon. A label is made up of several context strings, separated by a column: a user context (which ends with a \_u), a role context (which ends with a \_r), a type context (which ends with a \_t), a sensitivity context, and a category set. The rules of the targeted policy are mostly associated with the type (\_t) context.
 
 Restrict all new users to the `user_u` user role by default: `semanage login -m -S targeted -s "user_u" -r s0 __default__`
 
@@ -336,7 +336,7 @@ Set enforcing mode with the `setenforce enforcing` command. Check the default bo
 
 ### Need to restore SELinux default file contexts on a directory
 
-Apply the `restorecon -F` command to the target directory. Use the **-R** switch to change to contexts recursively for all files and subdirectories. 
+Apply the `restorecon -F` command to the target directory. Use the **-R** switch to change to contexts recursively for all files and subdirectories.
 
 ### Unexpected failure when SELinux is set in enforcing mode
 
@@ -350,40 +350,40 @@ Apply the `setsebool -P` command to the appropriate boolean setting.
 
 ### 1. Basic File Permissions
 
-* Standard Linux file permissions are read, write, and execute, which may vary for the user owner, the group owner, and other users.
-* Special permissions include the SUID, SGID, and sticky bits.
-* Default user permissions are based on the value of the `umask`.
-* Ownership and permissions can be changed with the `chown`, `chgrp`, and `chmod` commands.
-* Special file attributes can be listed with the `lsattr` command and modified by the `chattr` command.
+- Standard Linux file permissions are read, write, and execute, which may vary for the user owner, the group owner, and other users.
+- Special permissions include the SUID, SGID, and sticky bits.
+- Default user permissions are based on the value of the `umask`.
+- Ownership and permissions can be changed with the `chown`, `chgrp`, and `chmod` commands.
+- Special file attributes can be listed with the `lsattr` command and modified by the `chattr` command.
 
 ### 2. Access Control Lists and More
 
-* ACLs can be listed and modified on filesystems mounted with the **acl** option. The XFS and ext4 filesystems created on RHEL 7 have such an option enabled by default.
-* Every file already has ACLs based on standard ownership and permissions.
-* You can configure ACLs on a file to supersede standard ownership and permissions for specified users and groups on selected files. Actual ACLs may depend on the mask.
-* Custom ACLs on a file are not enough; selected users and groups also need access to the directories that contain such files.
-* Just as custom ACLs can support special access for selected users, they can also deny access to other selected users.
-* ACLs can be configured on shared NFS directories.
+- ACLs can be listed and modified on filesystems mounted with the **acl** option. The XFS and ext4 filesystems created on RHEL 7 have such an option enabled by default.
+- Every file already has ACLs based on standard ownership and permissions.
+- You can configure ACLs on a file to supersede standard ownership and permissions for specified users and groups on selected files. Actual ACLs may depend on the mask.
+- Custom ACLs on a file are not enough; selected users and groups also need access to the directories that contain such files.
+- Just as custom ACLs can support special access for selected users, they can also deny access to other selected users.
+- ACLs can be configured on shared NFS directories.
 
 ### 3. Basic Firewall Control
 
-* Standard Linux firewalls are based on the Netfilter kernel system and on the `iptables` tool.
-* Standard Linux firewalls assume the use of some of the ports and protocols listed in `/etc/services`.
-* The default RHEL 7 firewall supports remote access to the local SSH server.
-* The RHEL 7 firewall can be configured with the GUI `firewall-config` tool or the console-based tool `firewall-cmd` command.
+- Standard Linux firewalls are based on the Netfilter kernel system and on the `iptables` tool.
+- Standard Linux firewalls assume the use of some of the ports and protocols listed in `/etc/services`.
+- The default RHEL 7 firewall supports remote access to the local SSH server.
+- The RHEL 7 firewall can be configured with the GUI `firewall-config` tool or the console-based tool `firewall-cmd` command.
 
 ### 4. Securing SSH with Key-Based Authentication
 
-* SSH configuration commands include `ssh-keygen` and `ssh-copy-id`.
-* User home directories include their own .ssh subdirectory of configuration files, with private and public SSH keys, suitable for passphrases.
-* Private/public key pairs can be configured with passphrases using the `ssh-keygen` command.
-* Public keys can be transmitted to users' home directories on remote systems with the `ssh-copy-id` command.
+- SSH configuration commands include `ssh-keygen` and `ssh-copy-id`.
+- User home directories include their own .ssh subdirectory of configuration files, with private and public SSH keys, suitable for passphrases.
+- Private/public key pairs can be configured with passphrases using the `ssh-keygen` command.
+- Public keys can be transmitted to users' home directories on remote systems with the `ssh-copy-id` command.
 
 ### 4. A Security-Enhanced Linux Primer
 
-* SELinux may be configured in enforcing, permissive, or disabled mode, with targeted or MLS policies, with the help of the `setenforce` command. Default boot settings are stored in the `/etc/selinux/config` file.
-* User options for SELinux can be set with the `semanage login` command.
-* SELinux labels contain different contexts, such as user, roles, types, and MLS levels.
-* SELinux booleans can be managed with the `setsebool` command; permanenet changes require the -P switch.
-* SELinux contexts can be changed with `chcon` command and restored to defaults with the `restorecon` command.
-* The `sealert` command and the SELinux Troubleshoot Browser can be used to interpret problems documented in the audit.log file in the `/var/log/audit` directory.
+- SELinux may be configured in enforcing, permissive, or disabled mode, with targeted or MLS policies, with the help of the `setenforce` command. Default boot settings are stored in the `/etc/selinux/config` file.
+- User options for SELinux can be set with the `semanage login` command.
+- SELinux labels contain different contexts, such as user, roles, types, and MLS levels.
+- SELinux booleans can be managed with the `setsebool` command; permanenet changes require the -P switch.
+- SELinux contexts can be changed with `chcon` command and restored to defaults with the `restorecon` command.
+- The `sealert` command and the SELinux Troubleshoot Browser can be used to interpret problems documented in the audit.log file in the `/var/log/audit` directory.
