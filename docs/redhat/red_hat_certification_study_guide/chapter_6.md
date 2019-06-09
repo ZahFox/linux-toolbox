@@ -135,11 +135,11 @@ Logical Volume Management (LVM, also known as the Logical Volume Manager) create
 
 ### Definitions in LVM
 
-- **Physical volume (PV)** - A PV is a partition or a disk drive initialized to be useb by LVM.
+- **Physical volume (PV)** - A PV is a partition or a disk drive initialized to be used by LVM.
 - **Physical extent (PE)** - A PE is a small uniform segment of disk space. PVs are split into PEs.
 - **Volume group (VG)** - A VG is a storage pool, made of one or more PVs.
 - **Logical extent (LE)** - Every PE is associated with an LE, and these PEs can be combined into a logical volume.
-- **Logical volume (LV)** - An LV is a part of a VG and is made of LEs. An LV can be formated with a filesystem and then mounted on the directory of your choice.
+- **Logical volume (LV)** - An LV is a part of a VG and is made of LEs. An LV can be formatted with a filesystem and then mounted on the directory of your choice.
 
 ### Create a Physical Volume
 
@@ -219,14 +219,14 @@ Add additional PVs to a VG:
 ### Remove a Logical Volume
 
 1. Save any data in directories the are mounted on the LV.
-2. Unmount the fielsystem associated with the LV. As an example, you can use a command similar to the following: `umount /dev/vg_01/lv_01`.
+2. Unmount the filesystem associated with the LV. As an example, you can use a command similar to the following: `umount /dev/vg_01/lv_01`.
 3. Apply the `lvremove` command to the LV with a command such as this: `lvremove /dev/vg_01/lv_01`.
 4. You should now have the LEs from this LV free for use in other LVs.
 
 ### Resize Logical Volumes
 
 1. Back up any data existing on the `/home` directory.
-2. Extends the VG to include new partitions configured to the appropriate type. For example, to add `/dev/sdd1` to the vg_00 VG, run the following command: `vgextend vg_00 /dev/sdd1`.
+2. Extend the VG to include new partitions configured to the appropriate type. For example, to add `/dev/sdd1` to the vg_00 VG, run the following command: `vgextend vg_00 /dev/sdd1`.
 3. Make sure the new partitions are included in the VG with the following command: `vgdisplay vg_00`.
 4. Now you can extend the space given to the current LV. For example, to extend the LV to 2000MB, run the following command: `lvextend -L 2000M /dev/vg_00/lv_00`.
 5. The `lvextend` command can increase the space allocated to an LV in KB, MB, GB, or even TB. If you prefer to specify extra space to be added rather than total space, you can do this: `lvextend -L +1G /dev/vg_00/lv_00`.
@@ -235,4 +235,190 @@ Add additional PVs to a VG:
 
 ## Filesystem Management
 
+When Linux goes through the boot process, directories specified in `/etc/fstab` are mounted on configured volumes, with the help of the `mount` command.
+
+### The `/etc/fstab` File
+
+#### Description of `/etc/fstab` by Column, Left to Right
+
+| **Attribute**          | **Description**                                                                                                                                                                                                                                                                                                        |
+| :--------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Device                 | Lists the device to be mounted; you may substitute the UUID or the device path.                                                                                                                                                                                                                                        |
+| Mount Point            | Notes the directory where the filesystem will be mounted.                                                                                                                                                                                                                                                              |
+| Filesystem Format      | Describes the filesystem type. Valid filesystem types are xfs, ext2, ext3, ext4, msdos, vfat, iso9660, nfs, smb, swap, and many others.                                                                                                                                                                                |
+| Mount Options          | Covered in the following section.                                                                                                                                                                                                                                                                                      |
+| Dump Value             | Either 0 or 1. If you use the `dump` command to back up filesystems, this field controls which filesystems need to be dumped.                                                                                                                                                                                          |
+| Filesystem Check Order | Determines the order that filesystems are checked by the `fsck` command during the boot process. The root directory (/) filesystem should be set to 1, and other local filesystems should be set to 2. Removeable filesystems should be set to 0, which means that they are not checked during the Linux boot process. |
+
+### Universally Unique Identifiers in `/etc/fstab`
+
+Use the `blkid` command to get the UUID for a volume: `blkid <VOLUME_PATH>`
+(e.g., `blkid /dev/sda1`)
+
+### The `mount` Command
+
+The `mount` command can be used to attach local and network partitions to specified directories.
+
+Run `mount` by itself to list all currently mounted filesystems, along with important mount options.
+
+If you've unmounted a directory and have made changes to the `/etc/fstab` file, the easiest way to mount all filesystems currently configured in the `/etc/fstab` file is with the following command: `mount -a`.
+
+Remount a volume in read-only mode: `mount -o remount,ro <DIRECTORY>`
+(e.g., `mount -o remount,ro /boot`)
+
+### More Filesystem Mount Options
+
+| **Attribute** | **Description**                                                                                                         |
+| :------------ | :---------------------------------------------------------------------------------------------------------------------- |
+| async         | All I/O is done asynchronously on this filesystem.                                                                      |
+| atime         | Updates the inode access time ever time the file is accessed.                                                           |
+| auto          | Can be mounted with the `mount -a` command.                                                                             |
+| defaults      | Uses default mount options `rw`, `suid`, `dev`, `exec`, `auto`, `nouser`, and `async`.                                  |
+| dev           | Permits access to character devices such as terminals or consoles and block devices such as drives.                     |
+| exec          | Allows binaries to be run on this filesystem.                                                                           |
+| noatime       | Does not update the inode access time every time the file is accessed.                                                  |
+| noauto        | Requires explicit mounting. This is a common option for CD drives and removable media.                                  |
+| nodev         | Device files on this filesystem are not read or interpreted.                                                            |
+| noexec        | Binaries cannot be run on this filesystem.                                                                              |
+| nosuid        | Disallows `setuid` and `setgid` permissions on this filesystem.                                                         |
+| nouser        | Only root users are allowed to mount the specified filesystem.                                                          |
+| remount       | Remounts a currently mounted filesystem.                                                                                |
+| ro            | Mounts the filesystem as read-only.                                                                                     |
+| rw            | Mounts the filesystem as read/write.                                                                                    |
+| suid          | Allows `setuid` and `setgid` permissions on programs on this filesystem.                                                |
+| sync          | All I/O is done synchronously on this filesystem.                                                                       |
+| user          | Allows non-root users to mount this filesystem. By default, this also sets the `noexec`, `nosuid`, and `nodev` options. |
+
+### Networked Filesystems
+
+The two major sharing servies of interest are NFS and Samba.
+
+A connection to a shared NFS directory is based on its hostname or IP address, along with the full path to the directory on the server. So to connect to a remote NFS server on system _server1_ that shares the `/pub` directory, you could mount that share with the following command: `mount -t nfs server1.example.com:/pub /share`. However, this does not specify any mount options. You could also add this entry to `/etc/fstab`: `server1:/pub /share nfs rsize=65536,wsize=65536,hard,udp 0 0`.
+
+Shared Samba directories use a different set of options. The following line is generally all that's needed for a share of the same directory and server: `//server1/pub /share cifs rw,username=user,password=pass, 0 0` or `//server/pub /share cifs rw,credentials=/etc/secret 0 0`.
+
 ## The Automounter
+
+The automount daemon, also known as the automounter or `autofs`, can automatically mount a specific filesystem as needed. It can unmount a filesystem automatically after a fixed period of time.
+
+### Mounting via the Automounter
+
+The relevant configuration files are `auto.master`, `auto.misc`, `auto.net`, and `auto.smb`, all in the `etc` directory.
+
+Default automounter settings are configured in `/etc/sysconfig/autofs`.
+
+### Activate the Automounter
+
+As it is governed by the `autofs` daemon, you can stop, start, restart, or reload that service with one of the following commands:
+
+```bash
+systemctl stop autofs
+systemctl start autofs
+systemctl restart autofs
+systemctl reload autofs
+```
+
+## Scenario & Solution
+
+**Scenario:**
+
+You need to configure several new partitions for a standard Linux partition, for swap space, adn for a logical volume.
+
+**Solution:**
+
+Use the `fdisk`, `gdisk`, or `parted` utility to create partitions, and then modify their partition types with the `t` or `set` command.
+
+**Scenario:**
+
+You want to set up a mount during the boot process based on the UUID.
+
+**Solution:**
+
+Identify the UUID of the volume with the `blkid` command, and use that UUID in the `/etc/fstab` file.
+
+**Scenario:**
+
+You need to format a volume to the XFS filesystem type.
+
+**Solution:**
+
+Format the target volume with the command `mkfs.xfs`.
+
+**Scenario:**
+
+You need to format a volume to the ext2, ext3, or ext4 filesystem type.
+
+**Solution:**
+
+Format the target volume with a command such as `mkfs.ext2`, `mkfs.ext3`, or `mkfs.ext4`.
+
+**Scenario:**
+
+You want to set up a logical volume.
+
+**Solution:**
+
+Use the `pvcreate` command to create PVs; use the `vgcreate` command to combine PVs in VGs; use the `lvcreate` command to create an LV; format that LV for use.
+
+**Scenario:**
+
+You want to add new filesystems without destroying others.
+
+**Solution:**
+
+Use the free space on existing of newly installed hard drives.
+
+**Scenario:**
+
+You want to expand the space available to an LV formatted with the XFS filesystem.
+
+**Solution:**
+
+Use the `lvextend` command to increase the space available to an LV, and then use the `xfs_growfs` command to expand the formatted filesystem accordingly.
+
+**Scenario:**
+
+You need to configure automated mounts to a shared network filesystem.
+
+**Solution:**
+
+Configure the filesystem either in `/etc/fstab` or through to automounter.
+
+## Key Points
+
+### 1. Storage Management and Partitions
+
+- The `fdisk`, `gdisk`, and `parted` utilities can help you create and delete partitions.
+- `fdisk`, `gdisk`, and `parted` can be used to configure partitions for logical volumes and RAID arrays.
+- Disks can use the traditional MBR-style partitioning scheme, which supports primary, extended, and logical partitions, or the GPT scheme, which supports up to 128 partitions.
+
+### 2. Filesystem Formats
+
+- Linux tools can be used to configure and format volumes to a number of different filesystems.
+- Examples of standard filesystems include MS-DOS and ext2.
+- Journaling filesystems, which include logs that can restore metadata, are more resilient; the default RHEL 7 filesystem is XFS.
+- RHEL 7 supports a variety of `mkfs.*` filesystem format-check and `fsck.*` filesystem check commands.
+
+### 3. Basic Linux Filesystems and Directories
+
+- Linux file and filesystems are organized into directories based on the FHS.
+- Some Linux directories are well suited to configuration on separate filesystems.
+
+### 4. Logical Volume Management (LVM)
+
+- LVM is based on physical volumes, logical volumes, and volume groups.
+- You can create and add LVM systems with a wide variety of commands, starting with `pv*`, `lv*`, and `vg*`.
+- The space from new partitions configured as PVs can be allocated to existing volume groups with the `vgextend` command; they can be added to LVs with the `lvreate` and `lvextend` commands.
+- The extra space can be used to extend and existing XFS filesystem with the `xfs_growfs` command.
+
+### 4. Filesystem Management
+
+- Standard filesystems are mounted as defined in `/etc/fstab`.
+- Filesystem volumes are usually indetified by their UUIDs; for a list, run the `blkid` command.
+- The `mount` command can either use the settings in `/etc/fstab` or mount filesystem volumes directly.
+- It's also possible to configure mounts of shared network directories from NFS and Samba servers in `/etc/fstab`.
+
+### 5. The Automounter
+
+- With the automounter, you can configure automatic mounts of removable media and shared network drives.
+- Key automounter configuration files are `auto.master`, `auto.misc`, and `auto.net`, in the `/etc` directory.
