@@ -75,6 +75,7 @@ pacstrap /mnt $(echo $packages)
 
 # Prepare New Host
 genfstab -U /mnt >> /mnt/etc/fstab
+echo -e "\nproc	/proc	proc	defaults,hidepid=2	0	0" >> /mnt/etc/fstab
 echo $hostname >> /mnt/etc/hostname
 arch-chroot /mnt ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
 arch-chroot /mnt hwclock --systohc
