@@ -39,6 +39,7 @@ packages="arch-install-scripts \
   neofetch \
   networkmanager \
   $wireless_packages \
+  intel-ucode \
   openssh \
   pkgfile \
   rmlint \
@@ -135,9 +136,9 @@ else
     mkdir /mnt/boot/EFI
     mount ${disk}1 /mnt/boot/EFI
     refind-install --root /mnt
+    echo "\"Boot with defaults\"\t\"root=PARTUUID=$(blkid -s PARTUUID -o value ${disk}4) rw initrd=/intel-ucode.img initrd=/initramfs-linux.img add_efi_memmap\"" > /mnt/boot/refind_linux.conf
   fi
 fi
-
 
 # Custom Key Mappings
 dumpkeys > /tmp/custom.map
