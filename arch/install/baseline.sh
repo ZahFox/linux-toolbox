@@ -7,10 +7,18 @@ vim_base="${base}vim/"
 dotfiles_base="${arch_base}dotfiles/"
 install_base="${arch_base}install/"
 newuser="zahfox"
+wireless="true"
+
 bootloader="grub" # refind-efi
 fware=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
 ptable="GPT"
 disk=/dev/sda
+
+if [ "$wireless" = "true" ]; then
+  wireless_packages = "networkmanager-openvpn wireless_tools wpa_supplicant wpa_actiond"
+else
+  wireless_packages = ""
+fi
 
 pub="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDO96Mkloi3oGjxBrsoiNCs+eDmA/zG3Er3z9MX0JftEOpE5fkkz1yOV7TFHbl3WQRQb7vl2rH2tJ3ViEV/YWtVo0XNhcPygdYdNMPamKh0TQvm4WZretbVVRiXJAFT17phDmsS28xDZ+BJqebJLMALqKMnKs8gZnCHhEaFRiRUsUOJPB6yI0MyqVBftUXv/h0Vi9kuZUpZ4GWtTJYtjoDeozlQF2S91vA3Db+Hc4uq3DsFMdcMDv5FTkDAt8xWqaTQ9WLn7Q8Vnkz3XllHPp0G96/60lRGd6hI/BHTIqhDBHYFZtkZFhZW84bmql6YsLA8OxAqzXXV0FPt2vaKt+mB William@ULTRA-REX"
 hostname="oculi"$[ 1 + $[ RANDOM % 10 ]]""
@@ -30,6 +38,7 @@ packages="arch-install-scripts \
   net-tools \
   neofetch \
   networkmanager \
+  $wireless_packages \
   openssh \
   pkgfile \
   rmlint \
@@ -123,8 +132,8 @@ else
     echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
     arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
   else
-    mkdir /mnt/boot/efi 
-    mount ${disk}1 /mnt/boot/efi
+    mkdir /mnt/boot/EFI
+    mount ${disk}1 /mnt/boot/EFI
     refind-install --root /mnt
   fi
 fi
