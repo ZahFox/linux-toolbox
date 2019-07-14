@@ -7,6 +7,7 @@ vim_base="${base}vim/"
 dotfiles_base="${arch_base}dotfiles/"
 install_base="${arch_base}install/"
 newuser="zahfox"
+bootloader="grub" # refind-efi
 fware=$([ -d /sys/firmware/efi ] && echo UEFI || echo BIOS)
 ptable="GPT"
 disk=/dev/sda
@@ -24,7 +25,7 @@ packages="arch-install-scripts \
   dialog \
   fzf \
   git \
-  grub \
+  $bootloader \
   htop \
   net-tools \
   neofetch \
@@ -45,6 +46,11 @@ while ! ping -c1 -W0.3 "$pingcheckhost" > /dev/null; do
 done
 
 reflector --verbose --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
+pacman-key --populate archlinux
+pacman-key --refresh-keys
+if [ "$bootloader" = "refind-efi" ]; then
+  pacman -Sy $bootloader
+fi
 
 # Partition, Format, and Mount Hard Disk
 sgdisk -Z $disk
@@ -85,7 +91,6 @@ echo "LANG=$lang" > /mnt/etc/locale.conf
 echo "127.0.0.1     localhost" >> /mnt/etc/hosts
 echo "::1           localhost" >> /mnt/etc/hosts
 echo "127.0.1.1     ${hostname}.localdomain ${hostname}" >> /mnt/etc/hosts
-# arch-chroot /mnt systemctl enable dhcpcd
 arch-chroot /mnt systemctl disable dhcpcd
 arch-chroot /mnt systemctl enable NetworkManager
 
@@ -97,19 +102,33 @@ cat "${install_base}rc.local" > /mnt/etc/rc.local
 chmod +x /mnt/etc/rc.local
 arch-chroot /mnt systemctl enable rc-local.service
 
-# Install Boot Loader (GRUB)
+# Install Boot Loader (GRUB or rEFInd)
 if [ "$fware" = "BIOS" ]; then
-  grub-install --target=i386-pc --recheck $disk --root-directory=/mnt
+  if [ "$bootloader" = "grub" ]; then
+    grub-install --target=i386-pc --recheck $disk --root-directory=/mnt
+    sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /mnt/etc/default/grub
+    echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
+    arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+  else
+    echo "Error: grub is the required bootloader for BIOS installs." >&2
+    exit 1
+  fi
 else
-  mkdir /mnt/boot/loader
-  mount ${disk}1 /mnt/boot/loader
-  grub-install --target=x86_64-efi --efi-directory=/mnt/boot/loader --bootloader-id=GRUB --root-directory=/mnt
-  printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/loader/startup.nsh
+  if [ "$bootloader" = "grub" ]; then
+    mkdir /mnt/boot/loader
+    mount ${disk}1 /mnt/boot/loader
+    grub-install --target=x86_64-efi --efi-directory=/mnt/boot/loader --bootloader-id=GRUB --root-directory=/mnt
+    printf "FS0:\n\\\EFI\\GRUB\\grubx64.efi\n" > /mnt/boot/loader/startup.nsh
+    sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /mnt/etc/default/grub
+    echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
+    arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+  else
+    mkdir /mnt/boot/efi 
+    mount ${disk}1 /mnt/boot/efi
+    refind-install --root /mnt
+  fi
 fi
 
-sed -i 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=0/' /mnt/etc/default/grub
-echo 'GRUB_FORCE_HIDDEN_MENU="true"' >> /mnt/etc/default/grub
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
 
 # Custom Key Mappings
 dumpkeys > /tmp/custom.map
