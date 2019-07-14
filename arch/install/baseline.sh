@@ -15,7 +15,7 @@ ptable="GPT"
 disk=/dev/sda
 
 if [ "$wireless" = "true" ]; then
-  wireless_packages="networkmanager-openvpn wireless_tools wpa_supplicant wpa_actiond"
+  wireless_packages="networkmanager-openvpn wireless_tools wpa_supplicant"
 else
   wireless_packages=""
 fi
