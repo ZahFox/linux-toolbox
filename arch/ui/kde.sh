@@ -15,6 +15,5 @@ packages="xorg-server \
   plasma-pa"
 
 pacman --noconfirm -Syu $packages
-echo "setxkbmap -option caps:swapescape" >> $userdir/.bashrc
 
 systemctl enable sddm
