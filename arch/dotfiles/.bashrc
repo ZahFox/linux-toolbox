@@ -42,10 +42,13 @@ function git_merge {
 alias ls='ls --color=auto'
 alias ll='ls -lsha --color=auto'
 alias pacclean='sudo pacman -Rns $(pacman -Qtdq)'
+alias sbr='source ~/.bashrc'
+alias vbr='vim ~/.bashrc'
 
 # Project Aliases
 
 alias nand="cd $NAND"
+alias ltb="cd ~/Software/linux-toolbox"
 
 # NPM Aliases
 
